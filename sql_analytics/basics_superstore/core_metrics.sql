@@ -1,6 +1,6 @@
 --postgres
 
---Overview (îáçîð êëþ÷åâûõ ìåòðèê)
+--Overview (Ð¾Ð±Ð·Ð¾Ñ€ ÐºÐ»ÑŽÑ‡ÐµÐ²Ñ‹Ñ… Ð¼ÐµÑ‚Ñ€Ð¸Ðº)
 --Total Sales
 --Total Profit
 select sum(sales), sum(profit) from orders;
@@ -8,13 +8,13 @@ select sum(sales), sum(profit) from orders;
 
 --Profit Ratio
 with profit_stats as (
-	select 
-		(select count(*) cnt from orders where Profit >= 0) as Profitable		
-		,(select count(*) cnt from orders where Profit < 0) as Improfitable
+    select 
+        (select count(*) cnt from orders where Profit >= 0) as Profitable       
+        ,(select count(*) cnt from orders where Profit < 0) as Improfitable
 )
 select 
-	Profitable, Improfitable, ROUND(1.0*Profitable/Improfitable, 2) as "Profit Ratio"
-	from profit_stats;
+    Profitable, Improfitable, ROUND(1.0*Profitable/Improfitable, 2) as "Profit Ratio"
+    from profit_stats;
 
 
 --Profit per Order
@@ -22,7 +22,7 @@ select order_id, sum(profit), count(profit) as items
 from orders
 group by order_id 
 order by 2 desc;
-	
+    
 
 --Sales per Customer
 select customer_id, customer_name, sum(sales) "total sales"
@@ -36,22 +36,22 @@ select round(avg(discount), 3) as "average_discount"
 from orders;
 
 
---Monthly Sales by Segment ( òàáëè÷êà è ãðàôèê)
+--Monthly Sales by Segment ( Ñ‚Ð°Ð±Ð»Ð¸Ñ‡ÐºÐ° Ð¸ Ð³Ñ€Ð°Ñ„Ð¸Ðº)
 select 
-	segment	
-	,date_part('year', order_date) as year
-	,date_part('month', order_date) as month	
-	,sum(sales) as sales
+    segment 
+    ,date_part('year', order_date) as year
+    ,date_part('month', order_date) as month    
+    ,sum(sales) as sales
 from orders
 group by segment, year, month
 order by segment, year, month;
-	
+    
 
---Yearly Sales by Product Category (òàáëè÷êà è ãðàôèê)
+--Yearly Sales by Product Category (Ñ‚Ð°Ð±Ð»Ð¸Ñ‡ÐºÐ° Ð¸ Ð³Ñ€Ð°Ñ„Ð¸Ðº)
 select 
-	category "Product Category"
-	,date_part('year', order_date) as "Year"
-	,round(sum(sales),0) as "Total sales"
+    category "Product Category"
+    ,date_part('year', order_date) as "Year"
+    ,round(sum(sales),0) as "Total sales"
 from orders
 group by 1, 2
 order by 1, 2;
@@ -65,55 +65,55 @@ order by 2 desc;
 
 
 --Customer Ranking
--- èç òàáëè÷åê ñóìì ïðîäàæ è âûðó÷êè ñ àãðåãàöèåé ïî êëèåíòó
--- ïîëó÷àåì ðàíêè è îáúåäèíÿåì äâå ðàíêîâûõ òàáëèöû ïî èìåíè êëèåíòà 
+-- Ð¸Ð· Ñ‚Ð°Ð±Ð»Ð¸Ñ‡ÐµÐº ÑÑƒÐ¼Ð¼ Ð¿Ñ€Ð¾Ð´Ð°Ð¶ Ð¸ Ð²Ñ‹Ñ€ÑƒÑ‡ÐºÐ¸ Ñ Ð°Ð³Ñ€ÐµÐ³Ð°Ñ†Ð¸ÐµÐ¹ Ð¿Ð¾ ÐºÐ»Ð¸ÐµÐ½Ñ‚Ñƒ
+-- Ð¿Ð¾Ð»ÑƒÑ‡Ð°ÐµÐ¼ Ñ€Ð°Ð½ÐºÐ¸ Ð¸ Ð¾Ð±ÑŠÐµÐ´Ð¸Ð½ÑÐµÐ¼ Ð´Ð²Ðµ Ñ€Ð°Ð½ÐºÐ¾Ð²Ñ‹Ñ… Ñ‚Ð°Ð±Ð»Ð¸Ñ†Ñ‹ Ð¿Ð¾ Ð¸Ð¼ÐµÐ½Ð¸ ÐºÐ»Ð¸ÐµÐ½Ñ‚Ð° 
 with sales_sum as (
-	select customer_name, round(sum(sales), 2) total_sales
-	from orders
-	group by customer_name
+    select customer_name, round(sum(sales), 2) total_sales
+    from orders
+    group by customer_name
 ), profit_sum as (
-	select customer_name, round(sum(profit), 2) total_profit
-	from orders
-	group by customer_name
+    select customer_name, round(sum(profit), 2) total_profit
+    from orders
+    group by customer_name
 )
 select
-	customer_name "Customer Name"
-	,sales_ranking.rnk "Rank by Total Sales"
-	,sales_ranking.total_sales "Total Sales"
-	,profit_ranking.rnk "Rank by Total Profit"
-	,profit_ranking.total_profit "Total Profit"
+    customer_name "Customer Name"
+    ,sales_ranking.rnk "Rank by Total Sales"
+    ,sales_ranking.total_sales "Total Sales"
+    ,profit_ranking.rnk "Rank by Total Profit"
+    ,profit_ranking.total_profit "Total Profit"
 from 
-	(select 
-		customer_name
-		,rank() over(order by total_sales DESC) rnk
-		,total_sales
-	from sales_sum) sales_ranking
-	join
-	(select 
-		customer_name
-		,rank() over(order by total_profit DESC) rnk
-		,total_profit
-	from profit_sum) profit_ranking
-	using (customer_name)
+    (select 
+        customer_name
+        ,rank() over(order by total_sales DESC) rnk
+        ,total_sales
+    from sales_sum) sales_ranking
+    join
+    (select 
+        customer_name
+        ,rank() over(order by total_profit DESC) rnk
+        ,total_profit
+    from profit_sum) profit_ranking
+    using (customer_name)
 order by "Rank by Total Profit"
-	
+    
 
 --Sales per region
--- äîáàâëþ îòäåëüíóþ ñòðîêó èòîãîâ
+-- Ð´Ð¾Ð±Ð°Ð²Ð»ÑŽ Ð¾Ñ‚Ð´ÐµÐ»ÑŒÐ½ÑƒÑŽ ÑÑ‚Ñ€Ð¾ÐºÑƒ Ð¸Ñ‚Ð¾Ð³Ð¾Ð²
 with separate_values as 
 (
-	select region "Region"
-		,sum(sales) "Total Sales"
-		,sum(sales)/(select sum(sales) from orders) * 100 "Percentage"
-	from orders
-	group by 1
+    select region "Region"
+        ,sum(sales) "Total Sales"
+        ,sum(sales)/(select sum(sales) from orders) * 100 "Percentage"
+    from orders
+    group by 1
 )
 select "Region"
-	,round("Total Sales", 2) "Total Sales"
-	,round("Percentage", 1) "Percentage"
+    ,round("Total Sales", 2) "Total Sales"
+    ,round("Percentage", 1) "Percentage"
 from separate_values
 union
 select 'All'
-	,round(sum("Total Sales"), 2)
-	,sum("Percentage")
+    ,round(sum("Total Sales"), 2)
+    ,sum("Percentage")
 from separate_values;
